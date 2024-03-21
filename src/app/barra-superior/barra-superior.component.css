@@ -1,0 +1,37 @@
+.barra-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em;
+    background-color: #f5f5f5;
+    /* Color de fondo, puedes ajustar a tus necesidades */
+    border-bottom: 1px solid #e0e0e0;
+    /* Borde inferior para separar de contenido */
+}
+
+.barra-superior span {
+    font-size: 24px;
+    /* Ajustar según la apariencia deseada */
+    font-weight: bold;
+    /* Hacerlo negrita */
+}
+
+.barra-superior button {
+    background-color: #333;
+    /* Color de fondo del botón */
+    color: white;
+    /* Color de texto del botón */
+    border: none;
+    /* Remover borde por defecto */
+    padding: 8px 15px;
+    /* Espaciado interno para el botón */
+    cursor: pointer;
+    /* Cambiar el cursor al pasar por encima */
+    border-radius: 4px;
+    /* Bordes redondeados del botón */
+}
+
+/* Cambiar apariencia al pasar el cursor por encima del botón */
+.barra-superior button:hover {
+    background-color: #555;
+}
