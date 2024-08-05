@@ -7,7 +7,7 @@ export class WebSocketService {
  private webSocket: Socket;
  constructor() {
   this.webSocket = new Socket({
-   url: "https://api-voto-6ggs.onrender.com",
+   url: "http://localhost:3000",
    options: {transports: ['websocket']},
   });
  }

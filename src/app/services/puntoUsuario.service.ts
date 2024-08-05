@@ -9,7 +9,7 @@ import { IPuntoUsuario } from '../interfaces/IPuntoUsuario';
 
 export class PuntoUsuarioService {
 
-  private baseURL = `https://api-voto-6ggs.onrender.com`;
+  private baseURL = `http://localhost:3000`;
 
   constructor(private http: HttpClient) {}
 

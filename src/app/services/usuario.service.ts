@@ -9,7 +9,7 @@ import { IUsuario } from '../interfaces/IUsuario';
 
 export class UsuarioService {
 
-  private baseURL = `https://api-voto-6ggs.onrender.com`;
+  private baseURL = `http://localhost:3000`;
 
   constructor(private http: HttpClient) {}
 
