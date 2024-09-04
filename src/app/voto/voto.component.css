@@ -50,19 +50,7 @@ button {
   cursor: pointer;
 }
 
-.select-arrow {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 15%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background-color: #f0f0f0;
-  border-left: 1px solid #ccc;
-}
+
 
 .arrow-icon {
   font-size: 12px;
@@ -92,4 +80,53 @@ button {
 .checkmark {
   float: right;
   color: #007bff;
+}
+
+.select-arrow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 15%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  border-left: 1px solid #ccc;
+}
+
+
+.custom-input {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form-control {
+  flex: 1;
+  padding-right: 80px; /* Espacio para el botón de actualizar */
+}
+
+.input-actualizar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 25%; /* Ancho del botón */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  border-left: 1px solid #ccc;
+}
+
+.actualizar-icon {
+  font-size: 75%;
+  font-weight: bold;
+  text-transform: uppercase;
 }

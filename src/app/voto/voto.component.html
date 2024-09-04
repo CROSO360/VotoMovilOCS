@@ -4,16 +4,22 @@
   <h2 class="text-center mb-4">Bienvenido {{ payoad.nombre }}</h2>
 
   <form [formGroup]="votoForm" (ngSubmit)="registrarVoto()">
-    <div class="mb-1">
+    <div class="mb-1 position-relative">
       <label for="codigoSesion" class="form-label">Código Sesión:</label>
-      <input
-        type="text"
-        class="form-control"
-        id="codigoSesion"
-        formControlName="codigo"
-        (blur)="getSesionYPuntos($event)"
-      />
+      <div class="custom-input">
+        <input
+          type="text"
+          class="form-control"
+          id="codigoSesion"
+          formControlName="codigo"
+        />
+        <div class="input-actualizar" (click)="getSesionYPuntos()">
+          <span class="actualizar-icon">Cargar</span>
+        </div>
+      </div>
     </div>
+    
+    
 
     <div *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
@@ -31,7 +37,7 @@
       </select>
     </div-->
 
-    <div class="mt-3">
+    <div class="my-3">
       <label for="selectPunto" class="form-label">Punto:</label>
       <div class="custom-select">
         <div class="selected-items">
@@ -42,7 +48,7 @@
             {{ puntoSeleccionado.nombre }}
             <span
               class="close"
-              (click)="removeSelectedOption(puntoSeleccionado)"
+              (click)="removeSelectedOption(puntoSeleccionado, $event)"
               >x</span
             >
           </span>
@@ -51,6 +57,13 @@
           <span class="arrow-icon">{{ showOptions ? "▲" : "▼" }}</span>
         </div>
         <div class="options" *ngIf="showOptions">
+          <!-- Seleccionar todo -->
+          <div class="option" *ngIf="confirmationMessage" (click)="toggleSelectAllPuntos()">
+            Seleccionar todos
+            <span class="checkmark" *ngIf="allPuntosSelected">✔</span>
+          </div>
+
+          <!-- Lista de puntos -->
           <div
             *ngFor="let option of puntos"
             (click)="toggleOption(option)"
@@ -99,7 +112,7 @@
           value="abstinencia"
           id="abstinencia"
         />
-        <label class="form-check-label" for="abstinencia">Abstinencia</label>
+        <label class="form-check-label" for="abstinencia">Abstención</label>
       </div>
     </div>
 
@@ -117,8 +130,15 @@
       <button type="button" class="btn btn-secondary m-1" (click)="resetForm()">
         Nueva Votación
       </button>
-      <button type="button" class="btn btn-secondary m-1" data-bs-toggle="modal"
-      data-bs-target="#exampleModal" [disabled]="votoForm.invalid || puntosSeleccionados.length === 0">Enviar</button>
+      <button
+        type="button"
+        class="btn btn-secondary m-1"
+        data-bs-toggle="modal"
+        data-bs-target="#exampleModal"
+        [disabled]="votoForm.invalid || puntosSeleccionados.length === 0"
+      >
+        Enviar
+      </button>
 
       <div
         #exampleModal

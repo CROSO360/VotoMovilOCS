@@ -24,6 +24,7 @@ import { PuntoService } from '../services/punto.service';
 import { IPunto } from '../interfaces/IPunto';
 import { SesionService } from '../services/sesion.service';
 import { PuntoUsuarioService } from '../services/puntoUsuario.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-voto',
@@ -45,7 +46,8 @@ export class VotoComponent implements OnInit {
     private router: Router,
     private puntoService: PuntoService,
     private sesionService: SesionService,
-    private puntoUsuatioService: PuntoUsuarioService
+    private puntoUsuatioService: PuntoUsuarioService,
+    private toastr: ToastrService,
   ) {}
 
   puntos: IPunto[] = [];
@@ -65,6 +67,8 @@ export class VotoComponent implements OnInit {
   pointErrorMessage = '';
 
   showOptions = false;
+
+  allPuntosSelected = false;
 
   votoForm = new FormGroup({
     codigo: new FormControl('', Validators.required),
@@ -97,14 +101,14 @@ export class VotoComponent implements OnInit {
     });
   }
 
-  getSesionYPuntos(event: any) {
+  getSesionYPuntos() {
     this.idSesion = 0;
     this.puntos = [];
     this.puntosSeleccionados = []; // Limpiar la lista de puntos seleccionados
     this.errorMessage = ''; // Restablecer el mensaje de error
     this.confirmationMessage = ''; // Restablecer el mensaje de confirmación
   
-    const codigo = (event.target as HTMLInputElement).value;
+    const codigo = this.votoForm.get('codigo')?.value;
     console.log('Código de Sesión:', codigo);
   
     const query = `codigo=${codigo}&estado=1`;
@@ -120,8 +124,11 @@ export class VotoComponent implements OnInit {
             .getAllDataBy(query2, relations)
             .subscribe((puntosDisponibles) => {
               // Filtrar los puntos disponibles según los puntos asignados al usuario
-              this.puntos = puntosDisponibles.filter(puntoDisponible =>
-                this.puntoUsuarios.some(puntoUsuario => puntoUsuario.punto.id_punto === puntoDisponible.id_punto)
+              this.puntos = puntosDisponibles.filter((puntoDisponible) =>
+                this.puntoUsuarios.some(
+                  (puntoUsuario) =>
+                    puntoUsuario.punto.id_punto === puntoDisponible.id_punto
+                )
               );
               console.log(this.puntos);
             });
@@ -146,6 +153,7 @@ export class VotoComponent implements OnInit {
   }
   
   
+  
 
   toggleOption(option: IPunto) {
     const index = this.puntosSeleccionados.indexOf(option);
@@ -155,29 +163,47 @@ export class VotoComponent implements OnInit {
       this.puntosSeleccionados.push(option);
       this.pointErrorMessage = '';
     }
+    this.allPuntosSelected = this.puntosSeleccionados.length === this.puntos.length;
   }
 
-  removeSelectedOption(option: IPunto) {
+  removeSelectedOption(option: IPunto, event: MouseEvent) {
+    event.stopPropagation();
     const index = this.puntosSeleccionados.indexOf(option);
     if (index !== -1) {
       this.puntosSeleccionados.splice(index, 1);
     }
+    this.updateSelectAllStatus();
+  }
+
+  updateSelectAllStatus() {
+    this.allPuntosSelected =
+      this.puntosSeleccionados.length === this.puntos.length;
   }
 
   @HostListener('document:click', ['$event'])
-  onClick(event: any) {
-    if (!event.target.closest('.custom-select')) {
-      this.showOptions = false;
+  handleClickOutside(event: Event) {
+    const clickedInside = (event.target as HTMLElement).closest('.custom-select');
+    if (!clickedInside) {
+      this.showOptions = false; // Cierra el select si se hace clic fuera
     }
   }
 
+  toggleDropdown(event: MouseEvent) {
+    event.stopPropagation(); // Prevenir que el dropdown se cierre en clicks internos
+    this.showOptions = !this.showOptions;
+  }
+
   resetForm() {
-    this.votoForm.reset(); // Reiniciar el formulario
+    this.votoForm.patchValue({
+      opcion: '',
+      razonado: ''
+    }); // Reiniciar el formulario
     this.puntosSeleccionados = []; // Limpiar la lista de puntos seleccionados
     this.pointErrorMessage = ''; // Limpiar el mensaje de error de los puntos
     this.errorMessage = ''; // Limpiar el mensaje de error del código de sesión
     this.confirmationMessage = ''; // Limpiar el mensaje de confirmación
     this.puntos = []; // Limpiar la lista de puntos
+    this.allPuntosSelected = false;
 }
 
 
@@ -199,11 +225,21 @@ export class VotoComponent implements OnInit {
         this.puntoUsuatioService.saveVote(votoData).subscribe(()=>{
           console.log(`solicitud realizada`);
           this.resetForm();
+          this.toastr.success('Su voto se guardo correctamente', 'Éxito');
         });
 
       });
     }
 
+  }
+
+  toggleSelectAllPuntos() {
+    if (this.allPuntosSelected) {
+      this.puntosSeleccionados = [];
+    } else {
+      this.puntosSeleccionados = [...this.puntos];
+    }
+    this.allPuntosSelected = !this.allPuntosSelected;
   }
   
 }
