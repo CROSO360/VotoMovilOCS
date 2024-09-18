@@ -20,4 +20,8 @@ export class AuthService {
     return this.http.post<any>(`${this.baseURL}/auth/voter-login`, credentials)
   }
 
+  voterReemplazoLogin(credentials: any): Observable<any> {
+    return this.http.post<any>(`${this.baseURL}/auth/voter-reemplazo-login`, credentials)
+  }
+
 }

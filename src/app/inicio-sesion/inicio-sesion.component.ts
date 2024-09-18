@@ -23,6 +23,7 @@ export class InicioSesionComponent implements OnInit {
   voterLoginForm = this.fb.group({
     codigo: ['', [Validators.required]],
     cedula: ['', [Validators.required]],
+    reemplazo: [false],
   });
 
   errorMessage: string = '';
@@ -42,20 +43,41 @@ export class InicioSesionComponent implements OnInit {
       cedula: formData.cedula,
     };
 
-    this.authService.voterLogin(loginData).subscribe({
-      next: (response) => {
-        this.cookieService.set('token', response.token);
-        this.router.navigate(['/', 'voto']);
-      },
-      error: (e) => {
-        console.log('error: ', e);
-        if (e.status === 401) {
-          this.errorMessage = 'Credenciales incorrectas';
-        } else {
-          this.errorMessage =
-            'Se produjo un error. Por favor, inténtalo de nuevo.';
-        }
-      },
-    });
+    if (formData.reemplazo == false) {
+      this.authService.voterLogin(loginData).subscribe({
+        next: (response) => {
+          this.cookieService.set('token', response.token);
+          this.router.navigate(['/', 'voto']);
+        },
+        error: (e) => {
+          console.log('error: ', e);
+          if (e.status === 401) {
+            this.errorMessage = 'Credenciales incorrectas';
+          } else {
+            this.errorMessage =
+              'Se produjo un error. Por favor, inténtalo de nuevo.';
+          }
+        },
+      });
+    }else{
+      this.authService.voterReemplazoLogin(loginData).subscribe({
+        next: (response) => {
+          this.cookieService.set('token', response.token);
+          this.router.navigate(['/voto/reemplazo']);
+        },
+        error: (e) => {
+          console.log('error: ', e);
+          if (e.status === 401) {
+            this.errorMessage = e.error.message;
+          } else {
+            this.errorMessage =
+              `Se produjo un error. Por favor, inténtalo de nuevo.\r${e.error.message}`;
+          }
+        },
+      });
+      
+    }
+
+    
   }
 }

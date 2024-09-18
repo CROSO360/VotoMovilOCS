@@ -27,7 +27,7 @@ import { PuntoUsuarioService } from '../services/puntoUsuario.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
-  selector: 'app-voto',
+  selector: 'app-voto-reemplazo',
   standalone: true,
   imports: [
     BarraSuperiorComponent,
@@ -35,10 +35,10 @@ import { ToastrService } from 'ngx-toastr';
     FormsModule,
     ReactiveFormsModule,
   ],
-  templateUrl: './voto.component.html',
-  styleUrl: './voto.component.css',
+  templateUrl: './voto-reemplazo.component.html',
+  styleUrl: './voto-reemplazo.component.css',
 })
-export class VotoComponent implements OnInit {
+export class VotoReemplazoComponent {
   constructor(
     private fb: FormBuilder,
     private cookieService: CookieService,
@@ -47,7 +47,7 @@ export class VotoComponent implements OnInit {
     private puntoService: PuntoService,
     private sesionService: SesionService,
     private puntoUsuatioService: PuntoUsuarioService,
-    private toastr: ToastrService,
+    private toastr: ToastrService
   ) {}
 
   puntos: IPunto[] = [];
@@ -81,22 +81,11 @@ export class VotoComponent implements OnInit {
     this.getPuntoUsuario();
   }
 
-  /*getPuntos(){
-    const query = `sesion.id_sesion=${this.idSesion}`;
-    const relations = [`sesion`]
-    this.puntoService.getAllDataBy(query, relations).subscribe((data) =>{
-      this.puntos = data
-      console.log(data);
-    });
-    
-    
-  }*/
-
-  getPuntoUsuario(){
-    const query = `usuario.id_usuario=${this.payload.id}`;
+  getPuntoUsuario() {
+    const query = `usuario.id_usuario=${this.payload.id_principal}&es_principal=0`;
     const relations = [`punto`];
 
-    this.puntoUsuatioService.getAllDataBy(query, relations).subscribe((e)=>{
+    this.puntoUsuatioService.getAllDataBy(query, relations).subscribe((e) => {
       this.puntoUsuarios = e;
     });
   }
@@ -107,19 +96,19 @@ export class VotoComponent implements OnInit {
     this.puntosSeleccionados = []; // Limpiar la lista de puntos seleccionados
     this.errorMessage = ''; // Restablecer el mensaje de error
     this.confirmationMessage = ''; // Restablecer el mensaje de confirmación
-  
+
     const codigo = this.votoForm.get('codigo')?.value;
     console.log('Código de Sesión:', codigo);
-  
+
     const query = `codigo=${codigo}&estado=1`;
     this.sesionService.getDataBy(query).subscribe(
       (data) => {
         if (data && data.id_sesion) {
           this.idSesion = data.id_sesion;
-  
+
           const query2 = `sesion.id_sesion=${this.idSesion}&estado=1`;
           const relations = ['sesion'];
-  
+
           this.puntoService
             .getAllDataBy(query2, relations)
             .subscribe((puntosDisponibles) => {
@@ -127,12 +116,13 @@ export class VotoComponent implements OnInit {
               this.puntos = puntosDisponibles.filter((puntoDisponible) =>
                 this.puntoUsuarios.some(
                   (puntoUsuario) =>
-                    puntoUsuario.punto.id_punto === puntoDisponible.id_punto
+                    puntoUsuario.punto.id_punto === puntoDisponible.id_punto &&
+                    puntoUsuario.es_principal === false
                 )
               );
               console.log(this.puntos);
             });
-  
+
           // Indica que el código de sesión es válido
           this.confirmationMessage = 'Código de sesión válido.';
         } else {
@@ -150,10 +140,8 @@ export class VotoComponent implements OnInit {
         }
       }
     );
+    this.getPuntoUsuario();
   }
-  
-  
-  
 
   toggleOption(option: IPunto) {
     const index = this.puntosSeleccionados.indexOf(option);
@@ -163,7 +151,8 @@ export class VotoComponent implements OnInit {
       this.puntosSeleccionados.push(option);
       this.pointErrorMessage = '';
     }
-    this.allPuntosSelected = this.puntosSeleccionados.length === this.puntos.length;
+    this.allPuntosSelected =
+      this.puntosSeleccionados.length === this.puntos.length;
   }
 
   removeSelectedOption(option: IPunto, event: MouseEvent) {
@@ -182,7 +171,9 @@ export class VotoComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   handleClickOutside(event: Event) {
-    const clickedInside = (event.target as HTMLElement).closest('.custom-select');
+    const clickedInside = (event.target as HTMLElement).closest(
+      '.custom-select'
+    );
     if (!clickedInside) {
       this.showOptions = false; // Cierra el select si se hace clic fuera
     }
@@ -196,7 +187,7 @@ export class VotoComponent implements OnInit {
   resetForm() {
     this.votoForm.patchValue({
       opcion: '',
-      razonado: ''
+      razonado: '',
     }); // Reiniciar el formulario
     this.puntosSeleccionados = []; // Limpiar la lista de puntos seleccionados
     this.pointErrorMessage = ''; // Limpiar el mensaje de error de los puntos
@@ -204,33 +195,30 @@ export class VotoComponent implements OnInit {
     this.confirmationMessage = ''; // Limpiar el mensaje de confirmación
     this.puntos = []; // Limpiar la lista de puntos
     this.allPuntosSelected = false;
-}
-
+  }
 
   registrarVoto(): void {
-
     if (this.puntosSeleccionados.length === 0) {
       this.pointErrorMessage = 'No hay ningun punto seleccionado';
       return;
-    }else{
-      this.puntosSeleccionados.forEach((e)=>{
+    } else {
+      this.puntosSeleccionados.forEach((e) => {
         let votoData = {
-          id_usuario:this.payload.id,
-          codigo:this.votoForm.value.codigo,
-          punto:e.id_punto,
-          opcion:this.votoForm.value.opcion,
-          es_razonado:this.votoForm.value.razonado
-        }
+          id_usuario: this.payload.id_principal,
+          codigo: this.votoForm.value.codigo,
+          punto: e.id_punto,
+          opcion: this.votoForm.value.opcion,
+          es_razonado: this.votoForm.value.razonado,
+        };
 
-        this.puntoUsuatioService.saveVote(votoData).subscribe(()=>{
+        this.puntoUsuatioService.saveVote(votoData).subscribe(() => {
           console.log(`solicitud realizada`);
           this.resetForm();
           this.toastr.success('Su voto se guardo correctamente', 'Éxito');
         });
-
       });
     }
-
+    this.getPuntoUsuario();
   }
 
   toggleSelectAllPuntos() {
@@ -241,5 +229,4 @@ export class VotoComponent implements OnInit {
     }
     this.allPuntosSelected = !this.allPuntosSelected;
   }
-  
 }

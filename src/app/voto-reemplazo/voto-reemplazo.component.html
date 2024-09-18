@@ -1,0 +1,189 @@
+<app-barra-superior></app-barra-superior>
+
+<div class="container my-4">
+    <h2 class="text-center mb-4">Bienvenido {{ payload.nombre }}</h2>
+    <h3 class="text-center mb-4">Reemplazo de {{ payload.nombre_principal }}</h3>
+  
+    <form [formGroup]="votoForm" (ngSubmit)="registrarVoto()">
+      <div class="mb-1 position-relative">
+        <label for="codigoSesion" class="form-label">Código Sesión:</label>
+        <div class="custom-input">
+          <input
+            type="text"
+            class="form-control"
+            id="codigoSesion"
+            formControlName="codigo"
+          />
+          <div class="input-actualizar" (click)="getSesionYPuntos()">
+            <span class="actualizar-icon">Cargar</span>
+          </div>
+        </div>
+      </div>
+      
+      
+  
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="confirmationMessage" class="confirmation-message">
+        {{ confirmationMessage }}
+      </div>
+  
+      <!--div class="my-3">
+        <label for="selectPunto" class="form-label">Punto:</label>
+        <select class="form-select" formControlName="punto" id="selectPunto">
+          <option *ngFor="let punto of puntos" [value]="punto.id_punto">
+            {{ punto.nombre }}
+          </option>
+        </select>
+      </div-->
+  
+      <div class="my-3">
+        <label for="selectPunto" class="form-label">Punto:</label>
+        <div class="custom-select">
+          <div class="selected-items">
+            <span
+              *ngFor="let puntoSeleccionado of puntosSeleccionados"
+              class="selected-item"
+            >
+              {{ puntoSeleccionado.nombre }}
+              <span
+                class="close"
+                (click)="removeSelectedOption(puntoSeleccionado, $event)"
+                >x</span
+              >
+            </span>
+          </div>
+          <div class="select-arrow" (click)="showOptions = !showOptions">
+            <span class="arrow-icon">{{ showOptions ? "▲" : "▼" }}</span>
+          </div>
+          <div class="options" *ngIf="showOptions">
+            <!-- Seleccionar todo -->
+            <div class="option" *ngIf="confirmationMessage" (click)="toggleSelectAllPuntos()">
+              Seleccionar todos
+              <span class="checkmark" *ngIf="allPuntosSelected">✔</span>
+            </div>
+  
+            <!-- Lista de puntos -->
+            <div
+              *ngFor="let option of puntos"
+              (click)="toggleOption(option)"
+              class="option"
+            >
+              {{ option.nombre }}
+              <span class="checkmark" *ngIf="puntosSeleccionados.includes(option)"
+                >✔</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div *ngIf="pointErrorMessage" class="error-message">
+        {{ pointErrorMessage }}
+      </div>
+  
+      <div class="my-3">
+        <label class="form-label">Opción:</label>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            formControlName="opcion"
+            type="radio"
+            value="afavor"
+            id="afavor"
+          />
+          <label class="form-check-label" for="afavor">A Favor</label>
+        </div>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            formControlName="opcion"
+            type="radio"
+            value="encontra"
+            id="encontra"
+          />
+          <label class="form-check-label" for="encontra">En Contra</label>
+        </div>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            formControlName="opcion"
+            type="radio"
+            value="abstinencia"
+            id="abstinencia"
+          />
+          <label class="form-check-label" for="abstinencia">Abstención</label>
+        </div>
+      </div>
+  
+      <div class="mb-3 form-check">
+        <input
+          type="checkbox"
+          formControlName="razonado"
+          class="form-check-input"
+          id="votoRazonado"
+        />
+        <label class="form-check-label" for="votoRazonado">Voto Razonado</label>
+      </div>
+  
+      <div class="mb-3">
+        <button type="button" class="btn btn-secondary m-1" (click)="resetForm()">
+          Nueva Votación
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary m-1"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+          [disabled]="votoForm.invalid || puntosSeleccionados.length === 0"
+        >
+          Enviar
+        </button>
+  
+        <div
+          #exampleModal
+          class="modal fade"
+          id="exampleModal"
+          tabindex="-1"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                  Advertencia
+                </h1>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <p>Está seguro que quiere enviar su voto?</p>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Enviar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
