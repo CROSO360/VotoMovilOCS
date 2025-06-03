@@ -82,7 +82,7 @@ export class VotoReemplazoComponent {
   }
 
   getPuntoUsuario() {
-    const query = `usuario.id_usuario=${this.payload.id_principal}&es_principal=0`;
+    const query = `usuario.id_usuario=${this.payload.id_principal}&es_principal=0&estado=1`;
     const relations = [`punto`];
 
     this.puntoUsuatioService.getAllDataBy(query, relations).subscribe((e) => {

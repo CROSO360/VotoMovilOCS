@@ -93,7 +93,7 @@ export class VotoComponent implements OnInit {
   }*/
 
   getPuntoUsuario(){
-    const query = `usuario.id_usuario=${this.payload.id}`;
+    const query = `usuario.id_usuario=${this.payload.id}&estado=1`;
     const relations = [`punto`];
 
     this.puntoUsuatioService.getAllDataBy(query, relations).subscribe((e)=>{
@@ -219,7 +219,8 @@ export class VotoComponent implements OnInit {
           codigo:this.votoForm.value.codigo,
           punto:e.id_punto,
           opcion:this.votoForm.value.opcion,
-          es_razonado:this.votoForm.value.razonado
+          es_razonado:this.votoForm.value.razonado,
+          votante: this.payload.id,
         }
 
         this.puntoUsuatioService.saveVote(votoData).subscribe(()=>{

@@ -4,7 +4,9 @@ export interface IPuntoUsuario{
     id_usuario?: number;
     opcion?: string;
     es_razonado?: boolean;
+    votante?: number;
     es_principal?: boolean;
+    fecha?: Date;
     estado?: boolean;
     status?: boolean;
 }
