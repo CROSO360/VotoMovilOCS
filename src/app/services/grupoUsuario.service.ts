@@ -9,7 +9,8 @@ import { IGrupoUsuario } from '../interfaces/IGrupoUsuario';
 
 export class GrupoUsuarioService {
 
-  private baseURL = `http://localhost:3000`;
+  //private baseURL = `http://localhost:3000`;
+  private baseURL = `/api`;
 
   constructor(private http: HttpClient) {}
 

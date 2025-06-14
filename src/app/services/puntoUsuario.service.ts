@@ -9,7 +9,8 @@ import { IPuntoUsuario } from '../interfaces/IPuntoUsuario';
 
 export class PuntoUsuarioService {
 
-  private baseURL = `http://localhost:3000`;
+  //private baseURL = `http://localhost:3000`;
+  private baseURL = `/api`;
 
   constructor(private http: HttpClient) {}
 

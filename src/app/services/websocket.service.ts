@@ -7,8 +7,13 @@ export class WebSocketService {
  private webSocket: Socket;
  constructor() {
   this.webSocket = new Socket({
-   url: "http://localhost:3000",
-   options: {transports: ['websocket']},
+   //url: "http://localhost:3000",
+    url: "/",
+    options: {
+      path: '/api/socket.io',
+      transports: ['websocket'],
+      withCredentials: true,
+    },
   });
  }
 

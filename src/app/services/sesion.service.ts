@@ -9,7 +9,8 @@ import { ISesion } from '../interfaces/ISesion';
 
 export class SesionService {
 
-  private baseURL = `http://localhost:3000`;
+  //private baseURL = `http://localhost:3000`;
+  private baseURL = `/api`;
 
   constructor(private http: HttpClient) {}
 

@@ -9,7 +9,8 @@ import { IUsuario } from '../interfaces/IUsuario';
 
 export class UsuarioService {
 
-  private baseURL = `http://localhost:3000`;
+  //private baseURL = `http://localhost:3000`;
+  private baseURL = `/api`;
 
   constructor(private http: HttpClient) {}
 
