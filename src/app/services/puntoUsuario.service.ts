@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { IPuntoUsuario } from '../interfaces/IPuntoUsuario';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -9,8 +10,8 @@ import { IPuntoUsuario } from '../interfaces/IPuntoUsuario';
 
 export class PuntoUsuarioService {
 
-  //private baseURL = `http://localhost:3000`;
-  private baseURL = `/api`;
+      private baseURL = environment.baseURL; // URL base del backend, definida en environment.ts
+  
 
   constructor(private http: HttpClient) {}
 
