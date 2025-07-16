@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
-  baseURL: '/api', // Proxy o ruta protegida por Nginx
-  socketURL: '/', // producción: uso de proxy
+  baseURL: 'https://api-voto-6ggs.onrender.com/api', //'/api', // Proxy o ruta protegida por Nginx
+  socketURL: 'https://api-voto-6ggs.onrender.com',//'/', // producción: uso de proxy
+  socketPath: '/socket.io',
 };

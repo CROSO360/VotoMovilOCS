@@ -29,56 +29,79 @@
         {{ confirmationMessage }}
       </div>
   
-      <!--div class="my-3">
-        <label for="selectPunto" class="form-label">Punto:</label>
-        <select class="form-select" formControlName="punto" id="selectPunto">
-          <option *ngFor="let punto of puntos" [value]="punto.id_punto">
-            {{ punto.nombre }}
-          </option>
-        </select>
-      </div-->
   
-      <div class="my-3">
-        <label for="selectPunto" class="form-label">Punto:</label>
-        <div class="custom-select">
-          <div class="selected-items">
+      <!--div class="my-3" SELECT ANTERIOR>
+      <label for="selectPunto" class="form-label">Punto:</label>
+      <div class="custom-select">
+        <div class="selected-items">
+          <span
+            *ngFor="let puntoSeleccionado of puntosSeleccionados"
+            class="selected-item"
+          >
+            {{ puntoSeleccionado.nombre }}
             <span
-              *ngFor="let puntoSeleccionado of puntosSeleccionados"
-              class="selected-item"
+              class="close"
+              (click)="removeSelectedOption(puntoSeleccionado, $event)"
+              >x</span
             >
-              {{ puntoSeleccionado.nombre }}
-              <span
-                class="close"
-                (click)="removeSelectedOption(puntoSeleccionado, $event)"
-                >x</span
-              >
-            </span>
+          </span>
+        </div>
+        <div class="select-arrow" (click)="showOptions = !showOptions">
+          <span class="arrow-icon">{{ showOptions ? "▲" : "▼" }}</span>
+        </div>
+        <div class="options" *ngIf="showOptions">
+          <!- Seleccionar todo ->
+          <div class="option" *ngIf="confirmationMessage" (click)="toggleSelectAllPuntos()">
+            Seleccionar todos
+            <span class="checkmark" *ngIf="allPuntosSelected">✔</span>
           </div>
-          <div class="select-arrow" (click)="showOptions = !showOptions">
-            <span class="arrow-icon">{{ showOptions ? "▲" : "▼" }}</span>
-          </div>
-          <div class="options" *ngIf="showOptions">
-            <!-- Seleccionar todo -->
-            <div class="option" *ngIf="confirmationMessage" (click)="toggleSelectAllPuntos()">
-              Seleccionar todos
-              <span class="checkmark" *ngIf="allPuntosSelected">✔</span>
-            </div>
-  
-            <!-- Lista de puntos -->
-            <div
-              *ngFor="let option of puntos"
-              (click)="toggleOption(option)"
-              class="option"
+
+          <!- Lista de puntos ->
+          <div
+            *ngFor="let option of puntos"
+            (click)="toggleOption(option)"
+            class="option"
+          >
+            {{ option.nombre }}
+            <span class="checkmark" *ngIf="puntosSeleccionados.includes(option)"
+              >✔</span
             >
-              {{ option.nombre }}
-              <span class="checkmark" *ngIf="puntosSeleccionados.includes(option)"
-                >✔</span
-              >
-            </div>
           </div>
         </div>
       </div>
-  
+    </div-->
+
+    <div class="my-3">
+      <label for="selectPunto" class="form-label">Punto:</label>
+      <div class="custom-select">
+        <div class="selected-items">
+          <span class="selected-item" *ngIf="puntosSeleccionados.length > 0">
+            {{ puntosSeleccionados[0].nombre }}
+          </span>
+        </div>
+
+        <div class="select-arrow" (click)="toggleDropdown($event)">
+          <span class="arrow-icon">{{ showOptions ? "▲" : "▼" }}</span>
+        </div>
+
+        <div class="options" *ngIf="showOptions">
+          <div
+            *ngFor="let option of puntos"
+            (click)="toggleOption(option)"
+            class="option"
+          >
+            {{ option.nombre }}
+            <span
+              class="checkmark"
+              *ngIf="puntosSeleccionados[0]?.id_punto === option.id_punto"
+            >
+              ✔
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
       <div *ngIf="pointErrorMessage" class="error-message">
         {{ pointErrorMessage }}
       </div>
@@ -128,18 +151,18 @@
       </div>
   
       <div class="mb-3">
-        <button type="button" class="btn btn-secondary m-1" (click)="resetForm()">
-          Nueva Votación
-        </button>
         <button
-          type="button"
-          class="btn btn-secondary m-1"
-          data-bs-toggle="modal"
-          data-bs-target="#exampleModal"
-          [disabled]="votoForm.invalid || puntosSeleccionados.length === 0"
-        >
-          Enviar
-        </button>
+        type="button"
+        class="btn btn-secondary m-1"
+        data-bs-toggle="modal"
+        data-bs-target="#exampleModal"
+        [disabled]="votoForm.invalid || puntosSeleccionados.length === 0"
+      >
+        Enviar Voto
+      </button>
+      <button type="button" class="btn btn-secondary m-1" (click)="resetForm()">
+        Limpiar selección
+      </button>
   
         <div
           #exampleModal

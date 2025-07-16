@@ -10,7 +10,7 @@ export class WebSocketService {
   this.webSocket = new Socket({
       url: environment.socketURL, // URL del servidor WebSocket, definida en environment.ts
     options: {
-      path: '/api/socket.io',
+      path: environment.socketPath,
       transports: ['websocket'],
       withCredentials: true,
     },

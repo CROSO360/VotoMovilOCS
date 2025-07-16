@@ -61,4 +61,28 @@ export class PuntoUsuarioService {
     return this.http.post<any>(`${this.baseURL}/punto-usuario/voto`, data)
   }
 
+  /**
+   * Emite un solo voto para todos los puntos de un grupo
+   * @param idGrupo ID del grupo
+   * @param data Objeto VotarGrupoDto
+   */
+  votarGrupo(
+    idGrupo: number,
+    data: any/*{
+      codigo: string;
+      idUsuario: number;
+      opcion: 'afavor' | 'encontra' | 'abstencion' | null;
+      es_razonado: boolean;
+      votante: number;
+    }*/
+  ): Observable<{
+    mensaje: string;
+    ids: number[];
+  }> {
+    return this.http.post<{
+      mensaje: string;
+      ids: number[];
+    }>(`${this.baseURL}/punto-usuario/votar-grupo/${idGrupo}`, data);
+  }
+
 }
