@@ -1,36 +1,41 @@
 <app-barra-superior></app-barra-superior>
 
 <div class="container my-4">
-    <h2 class="text-center mb-4">Bienvenido {{ payload.nombre }}</h2>
-    <h3 class="text-center mb-4">Reemplazo de {{ payload.nombre_principal }}</h3>
-  
-    <form [formGroup]="votoForm" (ngSubmit)="registrarVoto()">
-      <div class="mb-1 position-relative">
-        <label for="codigoSesion" class="form-label">Código Sesión:</label>
-        <div class="custom-input">
-          <input
-            type="text"
-            class="form-control"
-            id="codigoSesion"
-            formControlName="codigo"
-          />
-          <div class="input-actualizar" (click)="getSesionYPuntos()">
+  <h2 class="text-center mb-4">Bienvenido {{ payload.nombre }}</h2>
+  <h3 class="text-center mb-4">Reemplazo de {{ payload.nombre_principal }}</h3>
+
+  <form [formGroup]="votoForm" (ngSubmit)="registrarVoto()">
+    <div class="mb-1 position-relative">
+      <label for="codigoSesion" class="form-label">Código Sesión:</label>
+      <div class="custom-input">
+        <input
+          type="text"
+          class="form-control"
+          id="codigoSesion"
+          formControlName="codigo"
+        />
+        <div
+          class="input-actualizar d-flex align-items-center justify-content-center"
+          (click)="!cargandoSesion && getSesionYPuntos()"
+        >
+          <ng-container *ngIf="!cargandoSesion; else cargandoIcono">
             <span class="actualizar-icon">Cargar</span>
-          </div>
+          </ng-container>
+          <ng-template #cargandoIcono>
+            <span class="spinner-border spinner-border-sm"></span>
+          </ng-template>
         </div>
       </div>
-      
-      
-  
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
-      <div *ngIf="confirmationMessage" class="confirmation-message">
-        {{ confirmationMessage }}
-      </div>
-  
-  
-      <!--div class="my-3" SELECT ANTERIOR>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    <div *ngIf="confirmationMessage" class="confirmation-message">
+      {{ confirmationMessage }}
+    </div>
+
+    <!--div class="my-3" SELECT ANTERIOR>
       <label for="selectPunto" class="form-label">Punto:</label>
       <div class="custom-select">
         <div class="selected-items">
@@ -102,56 +107,56 @@
       </div>
     </div>
 
-      <div *ngIf="pointErrorMessage" class="error-message">
-        {{ pointErrorMessage }}
-      </div>
-  
-      <div class="my-3">
-        <label class="form-label">Opción:</label>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            formControlName="opcion"
-            type="radio"
-            value="afavor"
-            id="afavor"
-          />
-          <label class="form-check-label" for="afavor">A Favor</label>
-        </div>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            formControlName="opcion"
-            type="radio"
-            value="encontra"
-            id="encontra"
-          />
-          <label class="form-check-label" for="encontra">En Contra</label>
-        </div>
-        <div class="form-check">
-          <input
-            class="form-check-input"
-            formControlName="opcion"
-            type="radio"
-            value="abstencion"
-            id="abstencion"
-          />
-          <label class="form-check-label" for="abstencion">Abstención</label>
-        </div>
-      </div>
-  
-      <div class="mb-3 form-check">
+    <div *ngIf="pointErrorMessage" class="error-message">
+      {{ pointErrorMessage }}
+    </div>
+
+    <div class="my-3">
+      <label class="form-label">Opción:</label>
+      <div class="form-check">
         <input
-          type="checkbox"
-          formControlName="razonado"
           class="form-check-input"
-          id="votoRazonado"
+          formControlName="opcion"
+          type="radio"
+          value="afavor"
+          id="afavor"
         />
-        <label class="form-check-label" for="votoRazonado">Voto Razonado</label>
+        <label class="form-check-label" for="afavor">A Favor</label>
       </div>
-  
-      <div class="mb-3">
-        <button
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          formControlName="opcion"
+          type="radio"
+          value="encontra"
+          id="encontra"
+        />
+        <label class="form-check-label" for="encontra">En Contra</label>
+      </div>
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          formControlName="opcion"
+          type="radio"
+          value="abstencion"
+          id="abstencion"
+        />
+        <label class="form-check-label" for="abstencion">Abstención</label>
+      </div>
+    </div>
+
+    <div class="mb-3 form-check">
+      <input
+        type="checkbox"
+        formControlName="razonado"
+        class="form-check-input"
+        id="votoRazonado"
+      />
+      <label class="form-check-label" for="votoRazonado">Voto Razonado</label>
+    </div>
+
+    <div class="mb-3">
+      <button
         type="button"
         class="btn btn-secondary m-1"
         data-bs-toggle="modal"
@@ -163,50 +168,58 @@
       <button type="button" class="btn btn-secondary m-1" (click)="resetForm()">
         Limpiar selección
       </button>
-  
-        <div
-          #exampleModal
-          class="modal fade"
-          id="exampleModal"
-          tabindex="-1"
-          aria-labelledby="exampleModalLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">
-                  Advertencia
-                </h1>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="modal-body">
-                <p>Está seguro que quiere enviar su voto?</p>
-              </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
-                  Close
-                </button>
-                <button
-                  type="submit"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                >
+
+      <div
+        #exampleModal
+        class="modal fade"
+        id="exampleModal"
+        tabindex="-1"
+        aria-labelledby="exampleModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">
+                Advertencia
+              </h1>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>Está seguro que quiere enviar su voto?</p>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button
+                type="submit"
+                class="btn btn-secondary d-flex align-items-center justify-content-center"
+                [disabled]="registrandoVoto"
+              >
+                <ng-container *ngIf="!registrandoVoto; else cargandoVoto">
+                  <i class="bi bi-check-circle me-2"></i>
                   Enviar
-                </button>
-              </div>
+                </ng-container>
+                <ng-template #cargandoVoto>
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Registrando...
+                </ng-template>
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
+</div>
+<app-footer></app-footer>

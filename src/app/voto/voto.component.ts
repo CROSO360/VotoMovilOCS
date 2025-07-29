@@ -1,12 +1,14 @@
 import {
   Component,
+  ElementRef,
   EventEmitter,
   HostListener,
   Input,
   OnInit,
   Output,
+  ViewChild,
 } from '@angular/core';
-import { BarraSuperiorComponent } from '../barra-superior/barra-superior.component';
+import { BarraSuperiorComponent } from '../components/barra-superior/barra-superior.component';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -27,6 +29,10 @@ import { PuntoUsuarioService } from '../services/puntoUsuario.service';
 import { ToastrService } from 'ngx-toastr';
 import { GrupoService } from '../services/grupo.service';
 import { IGrupo } from '../interfaces/IGrupo';
+import { Modal } from 'bootstrap';
+import { AsistenciaService } from '../services/asistencia.service';
+import { IAsistencia } from '../interfaces/IAsistencia';
+import { FooterComponent } from "../components/footer/footer.component";
 
 @Component({
   selector: 'app-voto',
@@ -36,7 +42,8 @@ import { IGrupo } from '../interfaces/IGrupo';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-  ],
+    FooterComponent
+],
   templateUrl: './voto.component.html',
   styleUrl: './voto.component.css',
 })
@@ -50,7 +57,8 @@ export class VotoComponent implements OnInit {
     private sesionService: SesionService,
     private puntoUsuatioService: PuntoUsuarioService,
     private toastr: ToastrService,
-    private grupoService: GrupoService
+    private grupoService: GrupoService,
+    private asistenciaService: AsistenciaService
   ) {}
 
   puntos: any[] = [];
@@ -75,16 +83,31 @@ export class VotoComponent implements OnInit {
 
   grupos: IGrupo[] = [];
 
+  @ViewChild('exampleModal') exampleModal!: ElementRef;
+  exampleModalRef: any;
+
+  //flags
+  cargandoSesion = false;
+
+  registrandoVoto = false;
+
   votoForm = new FormGroup({
     codigo: new FormControl('', Validators.required),
     opcion: new FormControl('', Validators.required),
-    razonado: new FormControl(''),
+    razonado: new FormControl(false),
   });
 
   ngOnInit(): void {
     this.payload = jwtDecode(this.cookieService.get('token'));
     this.getPuntoUsuario();
     //this.getGruposDeSesion();
+  }
+
+  ngAfterViewInit(): void {
+    const modalEl = this.exampleModal?.nativeElement;
+    if (modalEl) {
+      this.exampleModalRef = new Modal(modalEl);
+    }
   }
 
   /*getPuntos(){
@@ -100,7 +123,7 @@ export class VotoComponent implements OnInit {
 
   getPuntoUsuario() {
     const query = `usuario.id_usuario=${this.payload.id}&estado=1`;
-    const relations = [`punto`,`usuario.grupoUsuario`];
+    const relations = [`punto`, `usuario.grupoUsuario`];
 
     this.puntoUsuatioService.getAllDataBy(query, relations).subscribe((e) => {
       this.puntoUsuarios = e;
@@ -108,6 +131,8 @@ export class VotoComponent implements OnInit {
   }
 
   getSesionYPuntos() {
+    this.cargandoSesion = true;
+
     this.idSesion = 0;
     this.puntos = [];
     this.puntosSeleccionados = [];
@@ -119,85 +144,97 @@ export class VotoComponent implements OnInit {
 
     const query = `codigo=${codigo}&estado=1`;
 
-    this.sesionService.getDataBy(query).subscribe(
-      (data) => {
+    this.sesionService.getDataBy(query).subscribe({
+      next: (data) => {
         if (data && data.id_sesion) {
           this.idSesion = data.id_sesion;
 
-          const queryPuntos = `sesion.id_sesion=${this.idSesion}&estado=1`;
-          const relationsPuntos = ['sesion'];
+          // ✅ Refrescar puntoUsuarios ANTES de filtrar puntos
+          this.puntoUsuatioService
+            .getAllDataBy(`usuario.id_usuario=${this.payload.id}&estado=1`, [
+              'punto',
+              'usuario.grupoUsuario',
+            ])
+            .subscribe((puntoUsuariosActualizados) => {
+              this.puntoUsuarios = puntoUsuariosActualizados;
 
-          this.puntoService
-            .getAllDataBy(queryPuntos, relationsPuntos)
-            .subscribe((puntosDisponibles) => {
-              // Filtrar puntos asignados al usuario (es_principal)
-              const puntosFiltrados = puntosDisponibles.filter((p) =>
-                this.puedeVerPunto(p)
-              );
+              // ✅ Marcar asistencia
+              this.marcarAsistenciaComoPresente();
 
-              // Adaptar puntos
-              const puntosAdaptados = puntosFiltrados.map((p) => ({
-                ...p,
-                tipo: 'punto',
-                raw: p,
-              }));
+              const queryPuntos = `sesion.id_sesion=${this.idSesion}&estado=1`;
+              const relationsPuntos = ['sesion'];
 
-              this.puntos = puntosAdaptados;
+              this.puntoService
+                .getAllDataBy(queryPuntos, relationsPuntos)
+                .subscribe((puntosDisponibles) => {
+                  const puntosFiltrados = puntosDisponibles.filter((p) =>
+                    this.puedeVerPunto(p)
+                  );
 
-              // Luego de cargar puntos, cargar grupos
-              const queryGrupos = `sesion.id_sesion=${this.idSesion}&estado=1`;
-              const relationsGrupos = ['puntoGrupos', 'puntoGrupos.punto'];
+                  const puntosAdaptados = puntosFiltrados.map((p) => ({
+                    ...p,
+                    tipo: 'punto',
+                    raw: p,
+                  }));
 
-              this.grupoService
-                .getAllDataBy(queryGrupos, relationsGrupos)
-                .subscribe({
-                  next: (data) => {
-                    this.grupos = data;
+                  this.puntos = puntosAdaptados;
 
-                    const gruposFiltrados = this.grupos.filter((grupo) =>
-                      grupo.puntoGrupos?.every((pg) =>
-                        this.puntoUsuarios.some(
-                          (pu) =>
-                            pu.punto?.id_punto === pg.punto?.id_punto &&
-                            pu.es_principal === true
-                        )
-                      )
-                    );
+                  const queryGrupos = `sesion.id_sesion=${this.idSesion}&estado=1`;
+                  const relationsGrupos = ['puntoGrupos', 'puntoGrupos.punto'];
 
-                    const gruposAdaptados = gruposFiltrados.map((grupo) => ({
-                      id_punto: `grupo-${grupo.id_grupo}`,
-                      nombre: `(Grupo) ${grupo.nombre}`,
-                      tipo: 'grupo',
-                      raw: grupo,
-                    }));
+                  this.grupoService
+                    .getAllDataBy(queryGrupos, relationsGrupos)
+                    .subscribe({
+                      next: (data) => {
+                        this.grupos = data;
 
-                    this.puntos = [...this.puntos, ...gruposAdaptados];
+                        const gruposFiltrados = this.grupos.filter((grupo) =>
+                          grupo.puntoGrupos?.every((pg) =>
+                            this.puntoUsuarios.some(
+                              (pu) =>
+                                pu.punto?.id_punto === pg.punto?.id_punto &&
+                                pu.es_principal === true
+                            )
+                          )
+                        );
 
-                    this.confirmationMessage = 'Código de sesión válido.';
+                        const gruposAdaptados = gruposFiltrados.map(
+                          (grupo) => ({
+                            id_punto: `grupo-${grupo.id_grupo}`,
+                            nombre: `(Grupo) ${grupo.nombre}`,
+                            tipo: 'grupo',
+                            raw: grupo,
+                          })
+                        );
 
-                    /*this.puntosSeleccionados = [
-                      ...this.puntosSeleccionados,
-                      ...gruposAdaptados,
-                    ];
-                    this.allPuntosSelected = true;*/
-                  },
-                  error: () => {
-                    this.toastr.error('Error al cargar los grupos', 'Error');
-                  },
+                        this.puntos = [...this.puntos, ...gruposAdaptados];
+                        this.confirmationMessage = 'Código de sesión válido.';
+                        this.cargandoSesion = false;
+                      },
+                      error: (err) => {
+                        this.toastr.error(
+                          'Error al cargar los grupos',
+                          err.error.message || 'Error'
+                        );
+                        this.cargandoSesion = false;
+                      },
+                    });
                 });
             });
         } else {
           this.errorMessage = 'El código de sesión es inválido.';
+          this.cargandoSesion = false;
         }
       },
-      (error) => {
+      error: (error) => {
         console.log('error: ', error);
         this.errorMessage =
           error.status === 401
             ? 'Credenciales incorrectas'
             : 'Se produjo un error. Por favor, inténtalo de nuevo.';
-      }
-    );
+        this.cargandoSesion = false;
+      },
+    });
   }
 
   puedeVerPunto(punto: any): boolean {
@@ -220,6 +257,41 @@ export class VotoComponent implements OnInit {
       punto.requiere_voto_dirimente === false &&
       asignado
     );
+  }
+
+  marcarAsistenciaComoPresente(): void {
+    const query = `usuario.id_usuario=${this.payload.id}&sesion.id_sesion=${this.idSesion}`;
+
+    this.asistenciaService.getDataBy(query).subscribe({
+      next: (asistencia) => {
+        const asistenciaActualizada: IAsistencia = {
+          ...asistencia,
+          tipo_asistencia: 'presente',
+          estado: true,
+          status: true,
+        };
+
+        this.asistenciaService.saveData(asistenciaActualizada).subscribe({
+          next: () => {
+            console.log('✅ Asistencia actualizada a presente');
+          },
+          error: (err) => {
+            console.error('⚠️ Error al actualizar asistencia:', err);
+            this.toastr.warning(
+              'No se pudo actualizar la asistencia automáticamente',
+              'Advertencia'
+            );
+          },
+        });
+      },
+      error: (err) => {
+        console.error('❌ Asistencia no encontrada:', err);
+        this.toastr.error(
+          'No se encontró la asistencia registrada por la Secretaría',
+          'Error crítico'
+        );
+      },
+    });
   }
 
   /*getGruposDeSesion() {
@@ -317,7 +389,7 @@ toggleSelectAllPuntos() {
   resetForm() {
     this.votoForm.patchValue({
       opcion: '',
-      razonado: '',
+      razonado: false,
     }); // Reiniciar el formulario
     this.puntosSeleccionados = []; // Limpiar la lista de puntos seleccionados
     this.pointErrorMessage = ''; // Limpiar el mensaje de error de los puntos
@@ -327,16 +399,39 @@ toggleSelectAllPuntos() {
     this.allPuntosSelected = false;
   }
 
+  cerrarModal(modalId: string, form?: FormGroup, modalRef?: any) {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      if (modalRef) {
+        modalRef.hide();
+      } else {
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+      }
+    }
+
+    // 🔴 Este bloque es crucial para evitar lo que muestra la imagen
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    const backdrops = document.getElementsByClassName('modal-backdrop');
+    while (backdrops[0]) {
+      backdrops[0].parentNode?.removeChild(backdrops[0]);
+    }
+
+    if (form) form.reset();
+  }
+
   registrarVoto(): void {
     if (this.puntosSeleccionados.length === 0) {
-      this.pointErrorMessage = 'No hay ningun punto seleccionado';
+      this.pointErrorMessage = 'No hay ningún punto seleccionado';
       return;
     }
 
-    console.log('Payload actual:', this.payload);
+    this.registrandoVoto = true;
 
     const seleccionado = this.puntosSeleccionados[0];
-
     const votoData = {
       idUsuario: this.payload.id,
       codigo: this.votoForm.value.codigo,
@@ -345,34 +440,50 @@ toggleSelectAllPuntos() {
       votante: this.payload.id,
     };
 
-    // Si es un grupo, usar el servicio para grupos
+    const cerrarModal = () => {
+      this.cerrarModal('exampleModal', undefined, this.exampleModalRef);
+    };
+
+    const limpiarSoloCamposDeVoto = () => {
+      this.votoForm.patchValue({
+        opcion: '',
+        razonado: false,
+      });
+      this.puntosSeleccionados = [];
+      this.pointErrorMessage = '';
+      this.allPuntosSelected = false;
+    };
+
+    const finalizar = () => {
+      this.registrandoVoto = false;
+    };
+
+    const onSuccess = () => {
+      limpiarSoloCamposDeVoto();
+      this.toastr.success('Su voto se guardó correctamente', 'Éxito');
+      cerrarModal();
+      finalizar();
+    };
+
+    const onError = (msg: string) => {
+      this.toastr.error(msg, 'Error');
+      finalizar();
+    };
+
     if (seleccionado.tipo === 'grupo') {
       const idGrupo = Number(seleccionado.id_punto.replace('grupo-', ''));
-
       this.puntoUsuatioService.votarGrupo(idGrupo, votoData).subscribe({
-        next: () => {
-          this.resetForm();
-          this.toastr.success('Su voto se guardó correctamente', 'Éxito');
-        },
-        error: () => {
-          this.toastr.error('Error al registrar voto por grupo', 'Error');
-        },
+        next: onSuccess,
+        error: () => onError('Error al registrar voto por grupo'),
       });
     } else {
-      // Si es un punto individual
       const votoIndividual = {
         ...votoData,
         punto: Number(seleccionado.id_punto),
       };
-
       this.puntoUsuatioService.saveVote(votoIndividual).subscribe({
-        next: () => {
-          this.resetForm();
-          this.toastr.success('Su voto se guardó correctamente', 'Éxito');
-        },
-        error: () => {
-          this.toastr.error('Error al registrar voto individual', 'Error');
-        },
+        next: onSuccess,
+        error: () => onError('Error al registrar voto individual'),
       });
     }
   }

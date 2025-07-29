@@ -13,8 +13,16 @@
           id="codigoSesion"
           formControlName="codigo"
         />
-        <div class="input-actualizar" (click)="getSesionYPuntos()">
-          <span class="actualizar-icon">Cargar</span>
+        <div
+          class="input-actualizar d-flex align-items-center justify-content-center"
+          (click)="!cargandoSesion && getSesionYPuntos()"
+        >
+          <ng-container *ngIf="!cargandoSesion; else cargandoIcono">
+            <span class="actualizar-icon">Cargar</span>
+          </ng-container>
+          <ng-template #cargandoIcono>
+            <span class="spinner-border spinner-border-sm"></span>
+          </ng-template>
         </div>
       </div>
     </div>
@@ -194,10 +202,17 @@
               </button>
               <button
                 type="submit"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
+                class="btn btn-secondary d-flex align-items-center justify-content-center"
+                [disabled]="registrandoVoto"
               >
-                Enviar
+                <ng-container *ngIf="!registrandoVoto; else cargandoVoto">
+                  <i class="bi bi-check-circle me-2"></i>
+                  Enviar
+                </ng-container>
+                <ng-template #cargandoVoto>
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Registrando...
+                </ng-template>
               </button>
             </div>
           </div>
@@ -206,3 +221,4 @@
     </div>
   </form>
 </div>
+<app-footer></app-footer>

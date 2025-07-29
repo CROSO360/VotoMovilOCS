@@ -35,3 +35,8 @@
 .barra-superior button:hover {
     background-color: #555;
 }
+
+.uleam {
+  font-size: 1.3rem;
+  color: #212529;
+}

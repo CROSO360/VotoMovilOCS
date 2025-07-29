@@ -1,14 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FooterComponent } from "../components/footer/footer.component";
 
 @Component({
   selector: 'app-inicio-sesion',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FooterComponent],
   templateUrl: './inicio-sesion.component.html',
   styleUrl: './inicio-sesion.component.css',
 })
@@ -27,6 +33,7 @@ export class InicioSesionComponent implements OnInit {
   });
 
   errorMessage: string = '';
+  iniciandoSesion = false;
 
   async ngOnInit() {
     const cookie = await this.cookieService.check('token');
@@ -36,48 +43,43 @@ export class InicioSesionComponent implements OnInit {
   }
 
   onSubmit(): void {
-    const formData = this.voterLoginForm.value;
+    if (this.voterLoginForm.invalid) return;
 
+    this.iniciandoSesion = true;
+
+    const formData = this.voterLoginForm.value;
     const loginData = {
       codigo: formData.codigo,
       cedula: formData.cedula,
     };
 
-    if (formData.reemplazo == false) {
-      this.authService.voterLogin(loginData).subscribe({
-        next: (response) => {
-          this.cookieService.set('token', response.token);
-          this.router.navigate(['/', 'voto']);
-        },
-        error: (e) => {
-          console.log('error: ', e);
-          if (e.status === 401) {
-            this.errorMessage = 'Credenciales incorrectas';
-          } else {
-            this.errorMessage =
-              'Se produjo un error. Por favor, inténtalo de nuevo.';
-          }
-        },
-      });
-    }else{
-      this.authService.voterReemplazoLogin(loginData).subscribe({
-        next: (response) => {
-          this.cookieService.set('token', response.token);
-          this.router.navigate(['/voto/reemplazo']);
-        },
-        error: (e) => {
-          console.log('error: ', e);
-          if (e.status === 401) {
-            this.errorMessage = e.error.message;
-          } else {
-            this.errorMessage =
-              `Se produjo un error. Por favor, inténtalo de nuevo.\r${e.error.message}`;
-          }
-        },
-      });
-      
-    }
+    const callback = {
+      next: (response: any) => {
+        this.cookieService.set('token', response.token);
+        const ruta = formData.reemplazo ? '/voto/reemplazo' : '/voto';
+        this.router.navigate([ruta]);
+      },
+      error: (e: any) => {
+        if (e.status === 401) {
+          this.errorMessage = e.error.message || 'Credenciales incorrectas';
+          this.iniciandoSesion = false;
+        } else {
+          this.errorMessage = `Se produjo un error. Por favor, inténtalo de nuevo.\r${
+            e.error.message || ''
+          }`;
+          this.iniciandoSesion = false;
+        }
+        
+      },
+      complete: () => {
+        this.iniciandoSesion = false;
+      },
+    };
 
-    
+    if (!formData.reemplazo) {
+      this.authService.voterLogin(loginData).subscribe(callback);
+    } else {
+      this.authService.voterReemplazoLogin(loginData).subscribe(callback);
+    }
   }
 }
