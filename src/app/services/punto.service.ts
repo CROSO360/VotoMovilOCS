@@ -61,4 +61,8 @@ export class PuntoService {
     return this.http.post<any>(`${this.baseURL}/punto/registrar-resultado`, data)
   }
 
+  puntoHabilitado(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseURL}/punto/habilitado/${id}`);
+  }
+
 }

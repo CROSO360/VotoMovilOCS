@@ -1,7 +1,7 @@
 <app-barra-superior></app-barra-superior>
 
 <div class="container my-4">
-  <h2 class="text-center mb-4">Bienvenido {{ payload.nombre }}</h2>
+  <h2 class="text-center mb-4">OCS - {{ payload.nombre }}</h2>
   <h3 class="text-center mb-4">Reemplazo de {{ payload.nombre_principal }}</h3>
 
   <form [formGroup]="votoForm" (ngSubmit)="registrarVoto()">
@@ -13,6 +13,9 @@
           class="form-control"
           id="codigoSesion"
           formControlName="codigo"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
         />
         <div
           class="input-actualizar d-flex align-items-center justify-content-center"
