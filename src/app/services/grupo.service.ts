@@ -61,4 +61,8 @@ export class GrupoService {
   }): Observable<IGrupo> {
     return this.http.post<IGrupo>(`${this.baseURL}/grupo/agrupar`, data);
   }
+
+  grupoHabilitado(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseURL}/grupo/habilitado/${id}`);
+  }
 }

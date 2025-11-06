@@ -562,9 +562,22 @@ toggleSelectAllPuntos() {
 
     if (seleccionado.tipo === 'grupo') {
       const idGrupo = Number(seleccionado.id_punto.replace('grupo-', ''));
-      this.puntoUsuatioService.votarGrupo(idGrupo, votoData).subscribe({
-        next: onSuccess,
-        error: () => onError('Error al registrar voto por grupo'),
+
+      this.grupoService.grupoHabilitado(idGrupo).subscribe({
+        next: (resp) => {
+          const habilitado =
+            typeof resp === 'boolean' ? resp : !!resp?.habilitado;
+          if (!habilitado) {
+            onError('El grupo está deshabilitado para votar');
+            return;
+          }
+
+          this.puntoUsuatioService.votarGrupo(idGrupo, votoData).subscribe({
+            next: onSuccess,
+            error: () => onError('Error al registrar voto por grupo'),
+          });
+        },
+        error: () => onError('No fue posible verificar el estado del grupo'),
       });
     } else {
       const puntoId = Number(seleccionado.id_punto);

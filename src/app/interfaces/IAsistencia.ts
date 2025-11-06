@@ -28,6 +28,11 @@ export interface IAsistencia {
   tipo_asistencia?: string;
 
   /**
+   * Indica si es la asistencia principal del usuario en la sesión
+   */
+  es_principal?: boolean;
+
+  /**
    * Indica si la asistencia está activa (lógica de negocio)
    */
   estado?: boolean;
