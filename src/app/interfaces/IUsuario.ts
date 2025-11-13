@@ -1,12 +1,15 @@
+import { IGrupoUsuario } from "./IGrupoUsuario";
+
 export interface IUsuario{
     id_usuario?: number;
     nombre?: string;
     codigo?: string;
-    contrasena?: string;
     cedula?: string;
+    celular?: string;
+    contrasena?: string;
     tipo?: string;
-    id_grupo_usuario?: number;
-    id_usuario_reemplazo?: number;
+    grupoUsuario?: IGrupoUsuario;
+    usuarioReemplazo?: IUsuario;
     estado?: boolean;
     status?: boolean;
 }

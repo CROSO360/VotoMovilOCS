@@ -1,0 +1,146 @@
+<div class="container my-5">
+  <div class="card mx-auto" style="max-width: 640px; width: 100%;">
+    <div class="card-header text-center">
+      Sistema de voto electr&oacute;nico de OCS
+    </div>
+    <div class="card-body">
+      <form [formGroup]="accesoForm">
+        <div class="form-group position-relative" #usuarioSearchWrapper>
+          <label for="usuario">Usuario:</label>
+          <input
+            type="text"
+            id="usuario"
+            class="form-control"
+            placeholder="Ingrese su nombre"
+            [value]="searchTerm"
+            (input)="onSearchChange($event)"
+            (focus)="showSuggestions = true"
+            autocomplete="off"
+          />
+          <input type="hidden" formControlName="usuario" />
+          <ul
+            *ngIf="showSuggestions"
+            class="list-group suggestion-list"
+            role="listbox"
+          >
+            <li
+              class="list-group-item list-group-item-action"
+              *ngFor="let usuario of filteredUsuarios; trackBy: trackByUsuarioId"
+              (mousedown)="selectUsuario(usuario)"
+            >
+              {{ getUsuarioLabel(usuario) }}
+            </li>
+            <li
+              class="list-group-item text-muted"
+              *ngIf="filteredUsuarios.length === 0"
+            >
+              No se encontraron coincidencias
+            </li>
+          </ul>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger mt-3" role="alert">
+          {{ errorMessage }}
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="cedula">C&eacute;dula:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="cedula"
+            placeholder="Ingrese su c&eacute;dula"
+            formControlName="cedula"
+          />
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="celular">Celular:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="celular"
+            placeholder="Ingrese su n&uacute;mero de celular"
+            formControlName="celular"
+          />
+        </div>
+
+        <div class="form-group text-center mt-4">
+          <button
+            type="button"
+            class="btn btn-dark d-inline-flex align-items-center justify-content-center px-4"
+            [disabled]="iniciandoSesion || accesoForm.invalid"
+            (click)="onGenerateUserCode()"
+          >
+            <ng-container *ngIf="!iniciandoSesion; else cargandoLogin">
+              <i class="bi bi-box-arrow-in-right me-2"></i>
+              Enviar
+            </ng-container>
+            <ng-template #cargandoLogin>
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Enviando...
+            </ng-template>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
+
+<div
+  class="custom-modal-backdrop"
+  *ngIf="showConfirmationModal && modalData as data"
+>
+  <div class="custom-modal card">
+    <div class="card-header">
+      Datos actualizados
+    </div>
+    <div class="card-body">
+      <p><strong>Nombre:</strong> {{ data.nombre }}</p>
+      <p *ngIf="data.principal">
+        <strong>Principal:</strong> {{ data.principal }}
+      </p>
+      <p><strong>N&uacute;mero de c&eacute;dula:</strong> {{ data.cedula }}</p>
+      <p class="codigo-usuario-row">
+        <strong>C&oacute;digo de usuario:</strong>
+        <span class="codigo-usuario">{{ data.codigo }}</span>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm ms-2"
+          (click)="copiarCodigo(data.codigo)"
+        >
+          <ng-container *ngIf="copiedCodigo; else copiarLabel">
+            Copiado <span aria-hidden="true">✓</span>
+          </ng-container>
+          <ng-template #copiarLabel>Copiar</ng-template>
+        </button>
+      </p>
+      <p class="text-warning small mb-4">
+        Este es su c&oacute;digo de usuario, gu&aacute;rdelo y no lo comparta.
+      </p>
+      <div
+        *ngIf="modalErrorMessage"
+        class="alert alert-danger py-2"
+        role="alert"
+      >
+        {{ modalErrorMessage }}
+      </div>
+      <div class="text-end">
+        <button
+          type="button"
+          class="btn btn-primary d-inline-flex align-items-center"
+          (click)="submitModal()"
+          [disabled]="iniciandoSesionModal"
+        >
+          <span
+            *ngIf="iniciandoSesionModal"
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
+          {{ iniciandoSesionModal ? 'Iniciando...' : 'Iniciar sesi&oacute;n' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

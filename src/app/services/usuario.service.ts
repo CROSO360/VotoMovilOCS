@@ -53,4 +53,21 @@ export class UsuarioService {
     return this.http.post(`${this.baseURL}/usuario/delete/${id}`, {});
   }
 
+  actualizarDatos(
+    idUsuario: number,
+    cedula: string,
+    celular: string
+  ): Observable<{ codigo: string }> {
+    return this.http.post<{ codigo: string }>(
+      `${this.baseURL}/usuario/actualizar-datos`,
+      {
+        id_usuario: idUsuario,
+        cedula,
+        celular,
+      }
+    );
+  }
+  
+
+
 }
